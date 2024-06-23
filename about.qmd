@@ -1,0 +1,9 @@
+---
+title: "About"
+---
+
+Hi! I'm Sruthi Gandhi, a rising junior at Ryle High School. You can contact me at *sruthi.gandhi\@outlook.com*. [This is my GitHub account.](https://github.com/sruthigandhi/)
+
+This project explores data from various jails across America, seeing how death rates have increased and if they have a trend toward specific attributes and their relation to jails having apt healthcare. Here is the repository:
+
+This project was created as a part of [Kane’s Data Science Bootcamp.](https://bootcamp.davidkane.info/)
