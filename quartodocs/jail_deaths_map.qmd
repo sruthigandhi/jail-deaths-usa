@@ -1,0 +1,76 @@
+---
+title: "Jail Deaths in each state"
+author: "Sruthi"
+execute: 
+  echo: false
+  message: false
+  warning: false 
+---
+
+```{r}
+library(tidyverse)
+library(leaflet)
+library(sf)
+
+# Load datasets
+all_deaths <- read_csv("all_deaths.csv")
+all_jails <- read_csv("all_jails.csv")
+
+# Clean datasets
+all_deaths <- all_deaths |>
+  filter(!is.na(id))
+all_jails <- all_jails |>
+  filter(!is.na(id))
+
+# Merge datasets
+merged_data <- left_join(all_deaths, all_jails, by = "id")
+
+# Aggregate the number of deaths by state
+state_deaths <- merged_data |>
+  group_by(statecode) |>
+  summarize(number_of_deaths = n())
+
+# Load US states shapefile
+states <- st_read("https://eric.clst.org/assets/wiki/uploads/Stuff/gz_2010_us_040_00_5m.json", quiet = TRUE)
+
+# Ensure state codes match
+states$STATE <- state.abb[match(states$NAME, state.name)]
+
+# Join the aggregated data with state boundaries
+states_with_data <- states |>
+  left_join(state_deaths, by = c("STATE" = "statecode"))
+
+# Create a custom color palette
+pal <- colorNumeric(
+  palette = colorRampPalette(c("#e5f5e0", "#31a354", "#1a582d"))(100),
+  domain = states_with_data$number_of_deaths,
+  na.color = "#808080"
+)
+
+# Create the leaflet map
+states_with_data |>
+  leaflet() |>
+  setView(lng = -98, lat = 39, zoom = 4) |>
+  addPolygons(
+    fillColor = ~pal(number_of_deaths),
+    fillOpacity = 0.8,
+    color = "#FFFFFF",
+    weight = 0.5,
+    label = ~paste(NAME, ": ", number_of_deaths),
+    labelOptions = labelOptions(
+      style = list("font-weight" = "normal", padding = "3px 8px"),
+      textsize = "15px",
+      direction = "auto"
+    )
+  ) |>
+  addLegend(
+    pal = pal,
+    values = ~number_of_deaths,
+    opacity = 0.8,
+    title = "Number of Deaths",
+    position = "bottomright"
+  )
+```
+
+
+

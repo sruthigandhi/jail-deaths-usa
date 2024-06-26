@@ -1,0 +1,30 @@
+---
+title: "Sources"
+editor: visual
+---
+
+### Data
+
+Dying Inside: *The Hidden Crisis in America’s Jails*, Published October 2020. [Reuters News](https://www.reuters.com/investigates/special-report/usa-jails-graphic/#article-data-key-findings)[ Justice](https://bjs.ojp.gov/content/pub/pdf/ji19.pdf)
+
+Bureau of Justice Statistics: *Jail Inmates in 2019*, Published March 2021. [U.S. Department of Justice](https://bjs.ojp.gov/content/pub/pdf/ji19.pdf)
+
+### Process
+
+The data was pulled from two CSV files published by Reuters News and merged into 1 dataset; 1 with data about the jails and population, the other with data for each person and demographics. To make these graphs, both CSV files were combined into one file using the `left_join` function. To clean the data, all the empty instances were changed to `NA` and the shortened variables were mapped to full words using `cause_mapping` and `race_mapping`. For the pie chart, since the data for each race did not add up to 100, the total percentage was calculated using `sum(jail_population$Death_Percentage)` and this normalized each percentage by dividing by this total and multiplying by 100.
+
+Chat GPT and Claude were also used as a part of troubleshooting this project.
+
+### Packages Used:
+
+`tidyverse`
+
+`ggplot2`- Making plots
+
+`gganimate`- Animating plots
+
+`leaflet`- Interactive map
+
+`dplyr`- Filtering data
+
+`sf`- US states data for mapping

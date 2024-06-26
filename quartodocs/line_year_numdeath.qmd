@@ -1,0 +1,49 @@
+---
+title: "Year vs. number of deaths line"
+format: html
+author: Sruthi
+execute: 
+  echo: false
+  message: false
+  warning: false
+---
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(gganimate)
+```
+
+```{r}
+all_deaths <- readr::read_csv("all_deaths.csv")
+```
+
+```{r}
+all_deaths <- all_deaths|>
+  filter(!is.na(id))
+
+```
+
+```{r}
+yearly_deaths <- all_deaths |>
+  filter(year >= 2008 & year <= 2019) |>
+  group_by(year) |>
+  summarize(number_of_deaths = n())
+```
+
+```{r}
+plot<- ggplot(data = yearly_deaths, aes(x = year, y = number_of_deaths)) +
+  geom_line() +
+  labs(title = "Number of Jail Deaths by Year (2008-2019)",
+       subtitle = "Deaths have mostly increased over the years",
+       x = "Year",
+       y = "Number of Deaths") +
+  theme_bw()+
+  scale_x_continuous(breaks = seq(2008, 2019, by = 1))
+
+ggsave(filename = "year.png", plot = plot, width = 8, height = 6, dpi = 300)
+```
+
+---
+

@@ -1,0 +1,127 @@
+---
+title: "Race Ratio"
+author: "Sruthi"
+execute: 
+  echo: false
+  message: false
+  warning: false
+---
+
+# Load the packages
+```{r}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(gganimate)
+```
+
+```{r}
+# Read CSV files
+all_deaths <- readr::read_csv("all_deaths.csv")
+all_jails <- readr::read_csv("all_jails.csv")
+```
+
+```{r}
+# Merge CSV files
+all_deaths <- all_deaths|>
+  filter(!is.na(id))
+all_jails <- all_jails|>
+  filter(!is.na(id))
+```
+
+```{r}
+# Map races to show understandable names on the legend
+merged_data <- left_join(all_deaths, all_jails, by = "id")
+
+race_mapping <- c(
+  "A" = "Asian",
+  "AI" = "Native American",
+  "B" = "Black",
+  "H" = "Hispanic",
+  "O" = "Other",
+  "PI" = "Pacific Islander",
+  "W" = "White",
+  "NA" = "Unknown"
+)
+
+
+merged_data <- merged_data |>
+  mutate(race_full = recode(race, !!!race_mapping))
+```
+
+```{r}
+# Filter for the year 2019 and remove missing values in the 'race' column if any
+data_2019 <- all_deaths %>% filter(year == 2019, !is.na(race))
+
+# Summarize the deaths by race
+death_counts <- data_2019 %>%
+  group_by(race) %>%
+  summarise(deaths = n())
+
+# Extract the sum of deaths for each race and assign to variables
+whitedeaths19 <- death_counts %>% filter(race == "W") %>% pull(deaths)
+blackdeaths19 <- death_counts %>% filter(race == "B") %>% pull(deaths)
+hispanicdeaths19 <- death_counts %>% filter(race == "H") %>% pull(deaths)
+nativeamericandeaths19 <- death_counts %>% filter(race == "AI") %>% pull(deaths)
+asiandeaths19 <- death_counts %>% filter(race == "A") %>% pull(deaths)
+
+
+# Print the variables
+
+print(whitedeaths19)
+print(blackdeaths19)
+print(hispanicdeaths19)
+print(nativeamericandeaths19)
+print(asiandeaths19)
+# Creating a tribble which shows the amount of people in each race in jail so the ratios of the deaths can be . This shows the population of inmates by race, 2024.
+jail_population <- tribble(
+  ~Race,     ~Population, ~Deaths,
+  "White",      362900, 341,   
+  "Black",      247100, 193,
+  "Hispanic",   106900, 72,
+  "Native American", 10200, 6,
+  "Asian",           4700, 9
+ 
+)
+
+# Printing the tribble to see the output
+print(jail_population)
+
+# Making the pie chart:
+
+# Calculate the ratio/ death percentage
+jail_population <- jail_population %>%
+  mutate(Death_Percentage = (Deaths / Population) * 100)
+
+#Mutating percentage to add up to 100 for the pie chart
+total_percentage <- sum(jail_population$Death_Percentage)
+jail_population <- jail_population %>%
+  mutate(Normalized_Death_Percentage = (Death_Percentage / total_percentage) * 100)
+
+
+# Print the tribble to verify the calculations
+print(jail_population)
+
+# Create the pie chart using the Normalized_Death_Percentage
+race_pie <- ggplot(jail_population, aes(x="", y=Normalized_Death_Percentage, fill=Race)) +
+  geom_bar(stat="identity", width=1) +
+  coord_polar("y", start=0) +
+  theme_minimal() +
+  theme(
+    legend.position="none",
+    panel.background = element_rect(fill = "white", color = NA),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.grid = element_blank(),  # remove grid lines
+    axis.ticks = element_blank(),  # remove axis ticks
+    axis.text = element_blank(),   # remove axis text
+    axis.title = element_blank()   # remove axis titles
+  ) +
+  geom_text(aes(label=paste(Race, "\n", round(Normalized_Death_Percentage, 1), "%")), 
+            position=position_stack(vjust=0.5)) +
+  labs(title = "Percentage of Deaths per Race (2019)")
+
+# Save the plot as a PNG file
+ggsave("race_pie.png", plot = race_pie)
+
+```
+
